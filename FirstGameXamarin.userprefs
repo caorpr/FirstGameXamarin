@@ -1,1 +1,15 @@
-﻿<Properties StartupItem="FirstGameXamarin/FirstGameXamarin.csproj" />
+﻿<Properties StartupItem="FirstGameXamarin/FirstGameXamarin.csproj">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|x86" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="FirstGameXamarin/Controller/FirstGame.cs">
+    <Files>
+      <File FileName="FirstGameXamarin/Controller/FirstGame.cs" Line="112" Column="27" />
+      <File FileName="FirstGameXamarin/View/Animation.cs" Line="50" Column="7" />
+      <File FileName="FirstGameXamarin/Model/Player.cs" Line="67" Column="5" />
+      <File FileName="FirstGameXamarin/Model/Enemy.cs" Line="9" Column="4" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+</Properties>
