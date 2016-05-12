@@ -13,7 +13,7 @@ using UIKit;
 #endif
 #endregion
 
-namespace FirstGameXamarin
+namespace FirstGameXamarin.Controller
 {
 	#if __IOS__ || __TVOS__
     [Register("AppDelegate")]
@@ -23,11 +23,11 @@ namespace FirstGameXamarin
 	static class Program
     #endif
     {
-		private static Game1 game;
+		private static FirstGame game;
 
 		internal static void RunGame ()
 		{
-			game = new Game1 ();
+			game = new FirstGame ();
 			game.Run ();
 			#if !__IOS__  && !__TVOS__
 			game.Dispose ();
