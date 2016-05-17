@@ -31,8 +31,13 @@ namespace FirstGameXamarin.View
 		// The area where we want to display the image strip in the game
 		private Rectangle destinationRect = new Rectangle();
 
+		private int frameWidth;
 		// Width of a given frame
-		private int FrameWidth;
+		private int FrameWidth
+		{
+			get { return frameWidth; }
+			set { fameWidth = value; }
+		}
 
 		private int frameHeight;
 		// Height of a given frame
