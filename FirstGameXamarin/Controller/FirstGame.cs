@@ -1,10 +1,13 @@
 ﻿using System;
-
+using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Storage;
 using Microsoft.Xna.Framework.Input;
-using Microsoft.Xna.Framework.Input.Touch;
+using FirstGameXamarin.Model;
+using FirstGameXamarin.View;
+using Microsoft.Xna.Framework.Audio;
+using Microsoft.Xna.Framework.Media;
 
 namespace FirstGameXamarin.Controller
 {
@@ -44,15 +47,35 @@ namespace FirstGameXamarin.Controller
 		TimeSpan enemySpawnTime;
 		TimeSpan previousSpawnTime;
 
+		Texture2D explosionTexture;
+		List<Animation> explosions;
+
 		// A random number generator
 		Random random;
 
 		Texture2D projectileTexture;
 		List<Projectile> projectiles;
 
+	
+
+
 		// The rate of fire of the player laser
 		TimeSpan fireTime;
 		TimeSpan previousFireTime;
+
+		//Number that holds the player score
+		int score;
+		// The font used to display UI elements
+		SpriteFont font;
+
+		// The sound that is played when a laser is fired
+		SoundEffect laserSound;
+
+		// The sound used when the player or an enemy dies
+		SoundEffect explosionSound;
+
+		// The music played during gameplay
+		Song gameplayMusic;
 
 		public FirstGame ()
 		{
@@ -81,8 +104,6 @@ namespace FirstGameXamarin.Controller
 			// Set a constant player move speed
 			playerMoveSpeed = 8.0f;
 
-			//Enable the FreeDrag gesture.
-			TouchPanel.EnabledGestures = GestureType.FreeDrag;
 
 			bgLayer1 = new ParallaxingBackground();
 			bgLayer2 = new ParallaxingBackground();
@@ -95,14 +116,22 @@ namespace FirstGameXamarin.Controller
 
 			// Used to determine how fast enemy respawns
 			enemySpawnTime = TimeSpan.FromSeconds(1.0f);
+			// Set the laser to fire every quarter second
+			fireTime = TimeSpan.FromSeconds(.15f);
+
+			explosions = new List<Animation>();
 
 			// Initialize our random number generator
-			random = new Random()
+			random = new Random();
+
 
 			projectiles = new List<Projectile>();
 
-			// Set the laser to fire every quarter second
-			fireTime = TimeSpan.FromSeconds(.15f);
+
+			//Set player's score to zero
+			score = 0;
+
+
 
 			base.Initialize ();
 		}
@@ -128,14 +157,29 @@ namespace FirstGameXamarin.Controller
 			player.Initialize(playerAnimation, playerPosition);
 
 			// Load the parallaxing background
-			bgLayer1.Initialize(Content, "bgLayer1", GraphicsDevice.Viewport.Width, -1);
-			bgLayer2.Initialize(Content, "bgLayer2", GraphicsDevice.Viewport.Width, -2);
+			bgLayer1.Initialize(Content, "Texture/bgLayer1", GraphicsDevice.Viewport.Width, -1);
+			bgLayer2.Initialize(Content, "Texture/bgLayer2", GraphicsDevice.Viewport.Width, -2);
 
-			enemyTexture = Content.Load<Texture2D>("mineAnimation");
+			enemyTexture = Content.Load<Texture2D>("Animation/mineAnimation");
 
-			projectileTexture = Content.Load<Texture2D>("laser");
+			projectileTexture = Content.Load<Texture2D>("Texture/laser");
 
-			mainBackground = Content.Load<Texture2D>("mainbackground");
+			mainBackground = Content.Load<Texture2D>("Texture/mainbackground");
+
+			explosionTexture = Content.Load<Texture2D>("Animation/explosion");
+
+			// Load the music
+			gameplayMusic = Content.Load<Song>("Sound/gameMusic");
+
+			// Load the laser and explosion sound effect
+			laserSound = Content.Load<SoundEffect>("Sound/laserFire");
+			explosionSound = Content.Load<SoundEffect>("Sound/explosion");
+
+			// Start the music right away
+			PlayMusic(gameplayMusic);
+
+			// Load the score font
+			font = Content.Load<SpriteFont>("Font/gameFont");
 
 			//TODO: use this.Content to load your game content here 
 		}
@@ -175,6 +219,12 @@ namespace FirstGameXamarin.Controller
 
 			// Update the collision
 			UpdateCollision();
+
+			// Update the projectiles
+			UpdateProjectiles();
+
+			// Update the explosions
+			UpdateExplosions(gameTime);
             
 			base.Update (gameTime);
 		}
@@ -213,6 +263,26 @@ namespace FirstGameXamarin.Controller
 			// Make sure that the player does not go out of bounds
 			player.Position.X = MathHelper.Clamp(player.Position.X, 0,GraphicsDevice.Viewport.Width - player.Width);
 			player.Position.Y = MathHelper.Clamp(player.Position.Y, 0,GraphicsDevice.Viewport.Height - player.Height);
+
+			// Fire only every interval we set as the fireTime
+			if (gameTime.TotalGameTime - previousFireTime > fireTime)
+			{
+				// Reset our current time
+				previousFireTime = gameTime.TotalGameTime;
+
+				// Add the projectile, but add it to the front and center of the player
+				AddProjectile(player.Position + new Vector2(player.Width / 2, 0));
+
+				// Play the laser sound
+				laserSound.Play();
+			}
+
+			// reset score if player health goes to zero
+			if (player.Health <= 0)
+			{
+				player.Health = 100;
+				score = 0;
+			}
 		}
 
 
@@ -244,6 +314,23 @@ namespace FirstGameXamarin.Controller
 			{
 				enemies[i].Draw(spriteBatch);
 			}
+
+			// Draw the Projectiles
+			for (int i = 0; i < projectiles.Count; i++)
+			{
+				projectiles[i].Draw(spriteBatch);
+			}
+
+			// Draw the explosions
+			for (int i = 0; i < explosions.Count; i++)
+			{
+				explosions[i].Draw(spriteBatch);
+			}
+
+			// Draw the score
+			spriteBatch.DrawString(font, "score: " + score, new Vector2(GraphicsDevice.Viewport.TitleSafeArea.X, GraphicsDevice.Viewport.TitleSafeArea.Y), Color.White);
+			// Draw the player health
+			spriteBatch.DrawString(font, "health: " + player.Health, new Vector2(GraphicsDevice.Viewport.TitleSafeArea.X, GraphicsDevice.Viewport.TitleSafeArea.Y + 30), Color.White);
 
 			// Draw the Player
 			player.Draw(spriteBatch);
@@ -292,11 +379,30 @@ namespace FirstGameXamarin.Controller
 			// Update the Enemies
 			for (int i = enemies.Count - 1; i >= 0; i--) 
 			{
+
+
 				enemies[i].Update(gameTime);
 
 				if (enemies[i].Active == false)
 				{
+					// If not active and health <= 0
+					if (enemies[i].Health <= 0)
+					{
+						// Add an explosion
+						AddExplosion(enemies[i].Position);
+
+						// Play the explosion sound
+						explosionSound.Play();
+
+						//Add to the player's score
+						score += enemies[i].Value;
+
+					}
+
+
 					enemies.RemoveAt(i);
+
+				
 				} 
 			}
 		}
@@ -340,8 +446,106 @@ namespace FirstGameXamarin.Controller
 						player.Active = false; 
 				}
 
+
+			
+			}
+			// Projectile vs Enemy Collision
+			for (int i = 0; i < projectiles.Count; i++)
+			{
+				for (int j = 0; j < enemies.Count; j++)
+				{
+					// Create the rectangles we need to determine if we collided with each other
+					rectangle1 = new Rectangle((int)projectiles[i].Position.X - 
+						projectiles[i].Width / 2,(int)projectiles[i].Position.Y - 
+						projectiles[i].Height / 2,projectiles[i].Width, projectiles[i].Height);
+
+					rectangle2 = new Rectangle((int)enemies[j].Position.X - enemies[j].Width / 2,
+						(int)enemies[j].Position.Y - enemies[j].Height / 2,
+						enemies[j].Width, enemies[j].Height);
+
+					// Determine if the two objects collided with each other
+					if (rectangle1.Intersects(rectangle2))
+					{
+						enemies[j].Health -= projectiles[i].Damage;
+						projectiles[i].Active = false;
+					}
+				}
+			}
+				
+		}
+
+
+
+
+		private void AddProjectile(Vector2 position)
+		{
+			Projectile projectile = new Projectile(); 
+			projectile.Initialize(GraphicsDevice.Viewport, projectileTexture,position); 
+			projectiles.Add(projectile);
+		}
+
+
+		private void UpdateProjectiles()
+		{
+			// Update the Projectiles
+			for (int i = projectiles.Count - 1; i >= 0; i--) 
+			{
+				projectiles[i].Update();
+
+				if (projectiles[i].Active == false)
+				{
+					projectiles.RemoveAt(i);
+				} 
 			}
 		}
+
+
+
+		private void AddExplosion(Vector2 position)
+		{
+			Animation explosion = new Animation();
+			explosion.Initialize(explosionTexture,position, 134, 134, 12, 45, Color.White, 1f,false);
+			explosions.Add(explosion);
+		}
+
+
+		private void UpdateExplosions(GameTime gameTime)
+		{
+			for (int i = explosions.Count - 1; i >= 0; i--)
+			{
+				explosions[i].Update(gameTime);
+				if (explosions[i].Active == false)
+				{
+					explosions.RemoveAt(i);
+				}
+			}
+		}
+
+
+
+		private void PlayMusic(Song song)
+		{
+			// Due to the way the MediaPlayer plays music,
+			// we have to catch the exception. Music will play when the game is not tethered
+			try
+			{
+				// Play the music
+				MediaPlayer.Play(song);
+
+				// Loop the currently playing song
+				MediaPlayer.IsRepeating = true;
+			}
+			catch { }
+		}
+
+
+
+
+
+
+
+
+
+
 	}
 }
-

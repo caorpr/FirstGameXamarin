@@ -1,4 +1,9 @@
 ﻿using System;
+using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Content;
+
+
 
 namespace FirstGameXamarin.View
 {
@@ -33,15 +38,15 @@ namespace FirstGameXamarin.View
 
 		private int frameWidth;
 		// Width of a given frame
-		private int FrameWidth
+		public int FrameWidth
 		{
 			get { return frameWidth; }
-			set { fameWidth = value; }
+			set { frameWidth = value; }
 		}
 
 		private int frameHeight;
 		// Height of a given frame
-		private int FrameHeight
+		public int FrameHeight
 		{
 			get { return frameHeight; }
 			set { frameHeight = value; }
@@ -50,19 +55,19 @@ namespace FirstGameXamarin.View
 
 		private bool active;
 		// The state of the Animation
-		private bool Active()
+		public bool Active
 		{
 			get { return active; }
 			set { active = value; }
 
 		}
 
-		public bool looping;
+		private bool looping;
 		// Determines if the animation will keep playing or deactivate after one run
 		public bool Looping
 		{
-			get { return Looping; }
-			set { Looping = value; }
+			get { return looping; }
+			set { looping = value; }
 		}
 
 		// Width of a given frame
@@ -83,7 +88,7 @@ namespace FirstGameXamarin.View
 			this.scale = scale;
 
 			this.looping = looping;
-			this.position = position;
+			this.Position = position;
 			spriteStrip = texture;
 
 			// Set the time to zero

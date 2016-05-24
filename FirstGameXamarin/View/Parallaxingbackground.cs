@@ -1,17 +1,13 @@
 ﻿using System;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Content;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace FirstGameXamarin.View
 {
-	public class Parallaxingbackground
+	public class ParallaxingBackground
 	{
-		public Parallaxingbackground ()
-		{
-			// ParallaxingBackground.cs
-			using System;
-			using Microsoft.Xna.Framework;
-			using Microsoft.Xna.Framework.Content;
-			using Microsoft.Xna.Framework.Graphics;
-
+		// ParallaxingBackground.cs
 
 
 			// The image representing the parallaxing background
@@ -83,6 +79,6 @@ namespace FirstGameXamarin.View
 
 
 		}
-	}
+
 }
 

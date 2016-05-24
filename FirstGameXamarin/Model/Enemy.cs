@@ -1,16 +1,13 @@
 ﻿using System;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using FirstGameXamarin.View;
 
 namespace FirstGameXamarin.Model
 {
 	public class Enemy
 	{
-		public Enemy ()
-		{
-			using System;
-			using Microsoft.Xna.Framework;
-			using Microsoft.Xna.Framework.Graphics;
-
-
+		
 			// Animation representing the enemy
 			public Animation EnemyAnimation;
 
@@ -99,6 +96,6 @@ namespace FirstGameXamarin.Model
 
 
 		}
-	}
+
 }
 
