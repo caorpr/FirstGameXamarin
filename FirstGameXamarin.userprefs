@@ -1,9 +1,9 @@
 ﻿<Properties StartupItem="FirstGameXamarin/FirstGameXamarin.csproj">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|x86" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="FirstGameXamarin/Model/WaveBeam.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="FirstGameXamarin/Controller/FirstGame.cs">
     <Files>
-      <File FileName="FirstGameXamarin/Controller/FirstGame.cs" Line="508" Column="3" />
-      <File FileName="FirstGameXamarin/Model/WaveBeam.cs" Line="22" Column="8" />
+      <File FileName="FirstGameXamarin/Controller/FirstGame.cs" Line="451" Column="14" />
+      <File FileName="FirstGameXamarin/Model/PepeEnemy.cs" Line="86" Column="36" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
