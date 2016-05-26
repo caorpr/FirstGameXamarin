@@ -16,74 +16,87 @@ namespace FirstGameXamarin.Controller
 	/// </summary>
 	public class FirstGame : Game
 	{
-		GraphicsDeviceManager graphics;
-		SpriteBatch spriteBatch;
+
+
+		private string Weapon = "projectiles";
+
+
+
+
+		private GraphicsDeviceManager graphics;
+		private SpriteBatch spriteBatch;
 		// Represents the player 
-		Player player;
+		private Player player;
 
 		// Keyboard states used to determine key presses
-		KeyboardState currentKeyboardState;
-		KeyboardState previousKeyboardState;
+		private KeyboardState currentKeyboardState;
+		private KeyboardState previousKeyboardState;
 
 		// Gamepad states used to determine button presses
-		GamePadState currentGamePadState;
-		GamePadState previousGamePadState; 
+		private GamePadState currentGamePadState;
+		private GamePadState previousGamePadState; 
 
 		// A movement speed for the player
-		float playerMoveSpeed;
+		private float playerMoveSpeed;
 
 		// Image used to display the static background
-		Texture2D mainBackground;
+		private Texture2D mainBackground;
 
 		// Parallaxing Layers
-		ParallaxingBackground bgLayer1;
-		ParallaxingBackground bgLayer2;
+		private ParallaxingBackground bgLayer1;
+		private ParallaxingBackground bgLayer2;
 
 		// Enemies
-		Texture2D enemyTexture;
-		List<Enemy> enemies;
+		private Texture2D enemyTexture;
+		private List<Enemy> enemies;
 
 		// The rate at which the enemies appear
-		TimeSpan enemySpawnTime;
-		TimeSpan previousSpawnTime;
+		private TimeSpan enemySpawnTime;
+		private TimeSpan previousSpawnTime;
 
-		Texture2D explosionTexture;
-		List<Animation> explosions;
+		private TimeSpan waveBeamTime;
+		private TimeSpan previousWaveBeamTime;
+
+
+		private Texture2D explosionTexture;
+		private List<Animation> explosions;
 
 		// A random number generator
-		Random random;
+		private Random random;
 
-		Texture2D projectileTexture;
-		List<Projectile> projectiles;
+		private Texture2D projectileTexture;
+		private List<Projectile> projectiles;
+
+		private Texture2D waveBeamTexture;
+		private List<WaveBeam> waveBeam;
+
+
 
 	
 
 
 		// The rate of fire of the player laser
-		TimeSpan fireTime;
-		TimeSpan previousFireTime;
+		private TimeSpan fireTime;
+		private TimeSpan previousFireTime;
 
 		//Number that holds the player score
-		int score;
+		private int score;
 		// The font used to display UI elements
-		SpriteFont font;
+		private SpriteFont font;
 
 		// The sound that is played when a laser is fired
-		SoundEffect laserSound;
+		private SoundEffect laserSound;
 
 		// The sound used when the player or an enemy dies
-		SoundEffect explosionSound;
+		private SoundEffect explosionSound;
 
 		// The music played during gameplay
-		Song gameplayMusic;
+		private Song gameplayMusic;
 
 		public FirstGame ()
 		{
 			graphics = new GraphicsDeviceManager (this);
-
-			graphics.PreferredBackBufferWidth = 800;
-			graphics.PreferredBackBufferHeight = 800;
-			graphics.IsFullScreen = true;
+			//graphics.IsFullScreen = true;
 			graphics.ApplyChanges ();
 			Content.RootDirectory = "Content";
 		}
@@ -110,14 +123,20 @@ namespace FirstGameXamarin.Controller
 
 			// Initialize the enemies list
 			enemies = new List<Enemy> ();
+			waveBeam = new List <WaveBeam> ();
+
+
+
 
 			// Set the time keepers to zero
 			previousSpawnTime = TimeSpan.Zero;
+			previousWaveBeamTime = TimeSpan.Zero;
+			waveBeamTime = TimeSpan.FromSeconds (.01f); //How fast the bullets are created!
 
 			// Used to determine how fast enemy respawns
 			enemySpawnTime = TimeSpan.FromSeconds(1.0f);
 			// Set the laser to fire every quarter second
-			fireTime = TimeSpan.FromSeconds(.15f);
+			fireTime = TimeSpan.FromSeconds(.15f); //How fast the bullets are created!
 
 			explosions = new List<Animation>();
 
@@ -161,6 +180,8 @@ namespace FirstGameXamarin.Controller
 			bgLayer2.Initialize(Content, "Texture/bgLayer2", GraphicsDevice.Viewport.Width, -2);
 
 			enemyTexture = Content.Load<Texture2D>("Animation/mineAnimation");
+
+			waveBeamTexture = Content.Load<Texture2D> ("Animation/beam");
 
 			projectileTexture = Content.Load<Texture2D>("Texture/laser");
 
@@ -222,6 +243,7 @@ namespace FirstGameXamarin.Controller
 
 			// Update the projectiles
 			UpdateProjectiles();
+			UpdateWaveBeam (gameTime);
 
 			// Update the explosions
 			UpdateExplosions(gameTime);
@@ -277,12 +299,31 @@ namespace FirstGameXamarin.Controller
 				laserSound.Play();
 			}
 
+			if (gameTime.TotalGameTime - previousWaveBeamTime > waveBeamTime && currentKeyboardState.IsKeyDown (Keys.M))
+			{
+				// Reset our current time
+				previousWaveBeamTime = gameTime.TotalGameTime;
+
+				// Add the projectile, but add it to the front and center of the player
+				AddWaveBeam(player.Position + new Vector2(player.Width / 2, 0));
+
+				// Play the laser sound
+				laserSound.Play();
+			}
+
+
 			// reset score if player health goes to zero
 			if (player.Health <= 0)
 			{
 				player.Health = 100;
 				score = 0;
 			}
+
+
+//			if (score >= 2000)
+//			{
+//				Projectile = WaveBeam;
+//			}
 		}
 
 
@@ -320,6 +361,13 @@ namespace FirstGameXamarin.Controller
 			{
 				projectiles[i].Draw(spriteBatch);
 			}
+
+			// Draw the Projectiles
+			for (int i = 0; i < waveBeam.Count; i++)
+			{
+				waveBeam[i].Draw(spriteBatch);
+			}
+
 
 			// Draw the explosions
 			for (int i = 0; i < explosions.Count; i++)
@@ -471,7 +519,30 @@ namespace FirstGameXamarin.Controller
 					}
 				}
 			}
-				
+
+
+			// Projectile vs Enemy Collision
+			for (int i = 0; i < waveBeam.Count; i++)
+			{
+				for (int j = 0; j < enemies.Count; j++)
+				{
+					// Create the rectangles we need to determine if we collided with each other
+					rectangle1 = new Rectangle((int)waveBeam[i].Position.X - 
+						waveBeam[i].Width / 2,(int)waveBeam[i].Position.Y - 
+						waveBeam[i].Height / 2,waveBeam[i].Width, waveBeam[i].Height);
+
+					rectangle2 = new Rectangle((int)enemies[j].Position.X - enemies[j].Width / 2,
+						(int)enemies[j].Position.Y - enemies[j].Height / 2,
+						enemies[j].Width, enemies[j].Height);
+
+					// Determine if the two objects collided with each other
+					if (rectangle1.Intersects(rectangle2))
+					{
+						enemies[j].Health -= waveBeam[i].Hurt;
+						waveBeam[i].Active = false;
+					}
+				}
+			}
 		}
 
 
@@ -483,6 +554,17 @@ namespace FirstGameXamarin.Controller
 			projectile.Initialize(GraphicsDevice.Viewport, projectileTexture,position); 
 			projectiles.Add(projectile);
 		}
+
+		private void AddWaveBeam(Vector2 position)
+		{
+			WaveBeam currentWaveBeam = new WaveBeam (); 
+			Animation waveBeamAnimation = new Animation (); 
+			waveBeamAnimation.Initialize (waveBeamTexture, position, 50, 50, 19, 30, Color.White, 1.5f, true); //Frame width, frame height, #of frames, frame speed, color, frame speed, ?
+			currentWaveBeam.Initialize (waveBeamAnimation, position);
+			waveBeam.Add (currentWaveBeam);
+		}
+
+
 
 
 		private void UpdateProjectiles()
@@ -499,6 +581,21 @@ namespace FirstGameXamarin.Controller
 			}
 		}
 
+
+
+		private void UpdateWaveBeam(GameTime gameTime)
+		{
+			// Update the Projectiles
+			for (int i = waveBeam.Count - 1; i >= 0; i--) 
+			{
+				waveBeam[i].Update(gameTime);
+
+				if (waveBeam[i].Active == false)
+				{
+					waveBeam.RemoveAt(i);
+				} 
+			}
+		}
 
 
 		private void AddExplosion(Vector2 position)
