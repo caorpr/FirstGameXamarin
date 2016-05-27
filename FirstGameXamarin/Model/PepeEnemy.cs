@@ -17,7 +17,7 @@ namespace FirstGameXamarin
 		public Vector2 Position;
 
 		// The state of the Enemy Ship
-		public bool Active;
+		public bool PepeActive;
 
 		// The hit points of the enemy, if this goes to zero the enemy dies
 		public int PepeHealth;
@@ -29,13 +29,13 @@ namespace FirstGameXamarin
 		public int Value;
 
 		// Get the width of the enemy ship
-		public int Width 
+		public int PepeWidth 
 		{
 			get { return PepeAnimation.FrameWidth; } 
 		}
 
 		// Get the height of the enemy ship
-		public int Height 
+		public int PepeHeight 
 		{
 			get { return PepeAnimation.FrameHeight; } 
 		}
@@ -53,21 +53,21 @@ namespace FirstGameXamarin
 			Position = position;
 
 			// We initialize the enemy to be active so it will be update in the game
-			Active = true;
+			PepeActive = true;
 
 
 			// Set the health of the enemy
-			PepeHealth = 10;
+			PepeHealth = 100;
 
 			// Set the amount of damage the enemy can do
-			PepeDamage = 10;
+			PepeDamage = 100;
 
 			// Set how fast the enemy moves
-			pepeEnemyMoveSpeed = 6f;
+			pepeEnemyMoveSpeed = 1f;
 
 
 			// Set the score value of the enemy
-			Value = 100;
+			Value = 1000;
 		}
 
 
@@ -83,11 +83,11 @@ namespace FirstGameXamarin
 			PepeAnimation.Update(gameTime);
 
 			// If the enemy is past the screen or its health reaches 0 then deactivateit
-			if (Position.X < -Width || PepeHealth <= 0)
+			if (Position.X < -PepeWidth || PepeHealth <= 0)
 			{
 				// By setting the Active flag to false, the game will remove this objet fromthe
 				// active game list
-				Active = false;
+				PepeActive = false;
 			}
 		}
 

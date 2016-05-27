@@ -52,7 +52,7 @@ namespace FirstGameXamarin.Controller
 
 		// pepeEnemies!
 		private Texture2D pepeEnemyTexture;
-		private List<PepeEnemy> pepeEnemy;
+		private List<PepeEnemy> pepeEnemies;
 
 		// The rate at which the enemies appear
 		private TimeSpan enemySpawnTime;
@@ -75,7 +75,7 @@ namespace FirstGameXamarin.Controller
 		private List<Projectile> projectiles;
 
 		private Texture2D waveBeamTexture;
-		private List<WaveBeam> waveBeam;
+		private List<WaveBeam> waveBeams;
 
 
 
@@ -130,8 +130,8 @@ namespace FirstGameXamarin.Controller
 
 			// Initialize the enemies list
 			enemies = new List<Enemy> ();
-			pepeEnemy = new List<PepeEnemy> ();
-			waveBeam = new List <WaveBeam> ();
+			pepeEnemies = new List<PepeEnemy> ();
+			waveBeams = new List <WaveBeam> ();
 
 
 
@@ -139,11 +139,13 @@ namespace FirstGameXamarin.Controller
 			// Set the time keepers to zero
 			previousSpawnTime = TimeSpan.Zero;
 			previousWaveBeamTime = TimeSpan.Zero;
-			waveBeamTime = TimeSpan.FromSeconds (.01f); //How fast the bullets are created!
+			waveBeamTime = TimeSpan.FromSeconds (.15f); //How fast the bullets are created!
 
 			// Used to determine how fast enemy respawns
 			enemySpawnTime = TimeSpan.FromSeconds(1.0f);
-			pepeEnemySpawnTime = TimeSpan.FromSeconds (.01f);
+			pepeEnemySpawnTime = TimeSpan.FromSeconds (2f); //How fast the pepe's spawn
+
+
 			// Set the laser to fire every quarter second
 			fireTime = TimeSpan.FromSeconds(.15f); //How fast the bullets are created!
 
@@ -192,7 +194,7 @@ namespace FirstGameXamarin.Controller
 
 			pepeEnemyTexture = Content.Load<Texture2D> ("Animation/pepe");
 
-			waveBeamTexture = Content.Load<Texture2D> ("Animation/beam");
+			waveBeamTexture = Content.Load<Texture2D> ("Texture/pBeam");
 
 			projectileTexture = Content.Load<Texture2D>("Texture/laser");
 
@@ -311,17 +313,17 @@ namespace FirstGameXamarin.Controller
 				laserSound.Play();
 			}
 
-			if (gameTime.TotalGameTime - previousWaveBeamTime > waveBeamTime && currentKeyboardState.IsKeyDown (Keys.M))
-			{
-				// Reset our current time
-				previousWaveBeamTime = gameTime.TotalGameTime;
-
-				// Add the projectile, but add it to the front and center of the player
-				AddWaveBeam(player.Position + new Vector2(player.Width / 2, 0));
-
-				// Play the laser sound
-				laserSound.Play();
-			}
+//			if (gameTime.TotalGameTime - previousWaveBeamTime > waveBeamTime && currentKeyboardState.IsKeyDown (Keys.M))
+//			{
+//				// Reset our current time
+//				previousWaveBeamTime = gameTime.TotalGameTime;
+//
+//				// Add the projectile, but add it to the front and center of the player
+//				AddWaveBeam(player.Position + new Vector2(player.Width / 2, 0));
+//
+//				// Play the laser sound
+//				laserSound.Play();
+//			}
 
 
 			// reset score if player health goes to zero
@@ -369,9 +371,9 @@ namespace FirstGameXamarin.Controller
 			}
 
 			// Draw the pepeEnemies
-			for (int i = 0; i < enemies.Count; i++)
+			for (int i = 0; i < pepeEnemies.Count; i++)
 			{
-				pepeEnemy[i].Draw(spriteBatch);
+				pepeEnemies[i].Draw(spriteBatch);
 			}
 
 			// Draw the Projectiles
@@ -381,9 +383,9 @@ namespace FirstGameXamarin.Controller
 			}
 
 			// Draw the Projectiles
-			for (int i = 0; i < waveBeam.Count; i++)
+			for (int i = 0; i < waveBeams.Count; i++)
 			{
-				waveBeam[i].Draw(spriteBatch);
+				waveBeams[i].Draw(spriteBatch);
 			}
 
 
@@ -415,7 +417,7 @@ namespace FirstGameXamarin.Controller
 			Animation enemyAnimation = new Animation();
 
 			// Initialize the animation with the correct animation information
-			enemyAnimation.Initialize(enemyTexture, Vector2.Zero, 47, 61, 8, 30,Color.White, 1f, true);
+			enemyAnimation.Initialize(enemyTexture, Vector2.Zero, 47, 61, 8, 30, Color.White, 1f, true);
 
 			// Randomly generate the position of the enemy
 			Vector2 position = new Vector2(GraphicsDevice.Viewport.Width +enemyTexture.Width / 2, random.Next(100, GraphicsDevice.Viewport.Height -100));
@@ -436,10 +438,10 @@ namespace FirstGameXamarin.Controller
 			Animation pepeEnemyAnimation = new Animation();
 
 			// Initialize the animation with the correct animation information
-			pepeEnemyAnimation.Initialize(enemyTexture, Vector2.Zero, 47, 61, 8, 30,Color.White, 1f, true);
+			pepeEnemyAnimation.Initialize(pepeEnemyTexture, Vector2.Zero, 74, 98, 22, 80, Color.Green, 1f, true); //The 4th one is frametime. Higher goes slower.
 
 			// Randomly generate the position of the enemy
-			Vector2 position = new Vector2(GraphicsDevice.Viewport.Width +enemyTexture.Width / 2, random.Next(100, GraphicsDevice.Viewport.Height -100));
+			Vector2 position = new Vector2(GraphicsDevice.Viewport.Width +pepeEnemyTexture.Width / 2, random.Next(100, GraphicsDevice.Viewport.Height -100));
 
 			// Create an enemy
 			PepeEnemy pepeEnemy = new PepeEnemy();
@@ -448,7 +450,8 @@ namespace FirstGameXamarin.Controller
 			pepeEnemy.Initialize(pepeEnemyAnimation, position); 
 
 			// Add the enemy to the active enemies list
-			pepeEnemy.Add(pepeEnemy);
+
+			pepeEnemies.Add(pepeEnemy);
 		}
 
 
@@ -507,30 +510,30 @@ namespace FirstGameXamarin.Controller
 			}
 
 			// Update the Enemies
-			for (int i = pepeEnemy.Count - 1; i >= 0; i--) 
+			for (int i = pepeEnemies.Count - 1; i >= 0; i--) 
 			{
 
 
-				pepeEnemy[i].Update(gameTime);
+				pepeEnemies[i].Update(gameTime);
 
-				if (pepeEnemy[i].Active == false)
+				if (pepeEnemies[i].PepeActive == false)
 				{
 					// If not active and health <= 0
-					if (pepeEnemy[i].Health <= 0)
+					if (pepeEnemies[i].PepeHealth <= 0)
 					{
 						// Add an explosion
-						AddExplosion(pepeEnemy[i].Position);
+						AddExplosion(pepeEnemies[i].Position);
 
 						// Play the explosion sound
 						explosionSound.Play();
 
 						//Add to the player's score
-						score += pepeEnemy[i].Value;
+						score += pepeEnemies[i].Value;
 
 					}
 
 
-					pepeEnemy.RemoveAt(i);
+					pepeEnemies.RemoveAt(i);
 
 
 				} 
@@ -587,12 +590,12 @@ namespace FirstGameXamarin.Controller
 			}
 
 			// Do the collision between the player and the pepeEnemy
-			for (int i = 0; i <pepeEnemy.Count; i++)
+			for (int i = 0; i <pepeEnemies.Count; i++)
 			{
-				rectangle2 = new Rectangle((int)pepeEnemy[i].Position.X,
-					(int)pepeEnemy[i].Position.Y,
-					pepeEnemy[i].Width,
-					pepeEnemy[i].Height);
+				rectangle2 = new Rectangle((int)pepeEnemies[i].Position.X,
+					(int)pepeEnemies[i].Position.Y,
+					pepeEnemies[i].PepeWidth,
+					pepeEnemies[i].PepeHeight);
 
 				// Determine if the two objects collided with each
 				// other
@@ -600,11 +603,11 @@ namespace FirstGameXamarin.Controller
 				{
 					// Subtract the health from the player based on
 					// the enemy damage
-					player.Health -= pepeEnemy[i].PepeDamage;
+					player.Health -= pepeEnemies[i].PepeDamage;
 
 					// Since the enemy collided with the player
 					// destroy it
-					pepeEnemy[i].PepeHealth = 0;
+					pepeEnemies[i].PepeHealth = 0;
 
 					// If the player health is less than zero we died
 					if (player.Health <= 0)
@@ -643,21 +646,21 @@ namespace FirstGameXamarin.Controller
 			// Projectile vs pepeEnemy Collision
 			for (int i = 0; i < projectiles.Count; i++)
 			{
-				for (int j = 0; j < enemies.Count; j++)
+				for (int j = 0; j < pepeEnemies.Count; j++)
 				{
 					// Create the rectangles we need to determine if we collided with each other
 					rectangle1 = new Rectangle((int)projectiles[i].Position.X - 
 						projectiles[i].Width / 2,(int)projectiles[i].Position.Y - 
 						projectiles[i].Height / 2,projectiles[i].Width, projectiles[i].Height);
 
-					rectangle2 = new Rectangle((int)enemies[j].Position.X - enemies[j].Width / 2,
-						(int)enemies[j].Position.Y - enemies[j].Height / 2,
-						enemies[j].Width, enemies[j].Height);
+					rectangle2 = new Rectangle((int)pepeEnemies[j].Position.X - pepeEnemies[j].PepeWidth / 2,
+						(int)pepeEnemies[j].Position.Y - pepeEnemies[j].PepeHeight / 2,
+						pepeEnemies[j].PepeWidth, pepeEnemies[j].PepeHeight);
 
 					// Determine if the two objects collided with each other
 					if (rectangle1.Intersects(rectangle2))
 					{
-						enemies[j].Health -= projectiles[i].Damage;
+						pepeEnemies[j].PepeHealth -= projectiles[i].Damage;
 						projectiles[i].Active = false;
 					}
 				}
@@ -672,14 +675,14 @@ namespace FirstGameXamarin.Controller
 
 
 			// WaveBeam vs Enemy Collision
-			for (int i = 0; i < waveBeam.Count; i++)
+			for (int i = 0; i < waveBeams.Count; i++)
 			{
 				for (int j = 0; j < enemies.Count; j++)
 				{
 					// Create the rectangles we need to determine if we collided with each other
-					rectangle1 = new Rectangle((int)waveBeam[i].Position.X - 
-						waveBeam[i].Width / 2,(int)waveBeam[i].Position.Y - 
-						waveBeam[i].Height / 2,waveBeam[i].Width, waveBeam[i].Height);
+					rectangle1 = new Rectangle((int)waveBeams[i].waveBeamPosition.X - 
+						waveBeams[i].Width / 2,(int)waveBeams[i].waveBeamPosition.Y - 
+						waveBeams[i].Height / 2,waveBeams[i].Width, waveBeams[i].Height);
 
 					rectangle2 = new Rectangle((int)enemies[j].Position.X - enemies[j].Width / 2,
 						(int)enemies[j].Position.Y - enemies[j].Height / 2,
@@ -688,8 +691,8 @@ namespace FirstGameXamarin.Controller
 					// Determine if the two objects collided with each other
 					if (rectangle1.Intersects(rectangle2))
 					{
-						enemies[j].Health -= waveBeam[i].Hurt;
-						waveBeam[i].Active = false;
+						enemies[j].Health -= waveBeams[i].Hurt;
+						waveBeams[i].Active = false;
 					}
 				}
 			}
@@ -698,24 +701,25 @@ namespace FirstGameXamarin.Controller
 
 
 			// WaveBeam vs pepeEnemy Collision
-			for (int i = 0; i < waveBeam.Count; i++)
+			for (int i = 0; i < waveBeams.Count; i++)
 			{
-				for (int j = 0; j < enemies.Count; j++)
+				for (int j = 0; j < pepeEnemies.Count; j++)
+					
 				{
 					// Create the rectangles we need to determine if we collided with each other
-					rectangle1 = new Rectangle((int)waveBeam[i].Position.X - 
-						waveBeam[i].Width / 2,(int)waveBeam[i].Position.Y - 
-						waveBeam[i].Height / 2,waveBeam[i].Width, waveBeam[i].Height);
+					rectangle1 = new Rectangle((int)waveBeams[i].waveBeamPosition.X - 
+						waveBeams[i].Width / 2,(int)waveBeams[i].waveBeamPosition.Y - 
+						waveBeams[i].Height / 2,waveBeams[i].Width, waveBeams[i].Height);
 
-					rectangle2 = new Rectangle((int)enemies[j].Position.X - enemies[j].Width / 2,
-						(int)enemies[j].Position.Y - enemies[j].Height / 2,
-						enemies[j].Width, enemies[j].Height);
+					rectangle2 = new Rectangle((int)pepeEnemies[j].Position.X - pepeEnemies[j].PepeWidth / 2,
+						(int)pepeEnemies[j].Position.Y - pepeEnemies[j].PepeHeight / 2,
+						pepeEnemies[j].PepeWidth, pepeEnemies[j].PepeHeight);
 
 					// Determine if the two objects collided with each other
 					if (rectangle1.Intersects(rectangle2))
 					{
-						enemies[j].Health -= waveBeam[i].Hurt;
-						waveBeam[i].Active = false;
+						pepeEnemies[j].PepeHealth -= waveBeams[i].Hurt;
+						waveBeams[i].Active = false;
 					}
 				}
 			}
@@ -739,11 +743,20 @@ namespace FirstGameXamarin.Controller
 
 		private void AddWaveBeam(Vector2 position)
 		{
-			WaveBeam currentWaveBeam = new WaveBeam (); 
-			Animation waveBeamAnimation = new Animation (); 
-			waveBeamAnimation.Initialize (waveBeamTexture, position, 50, 50, 19, 30, Color.White, 1.5f, true); //Frame width, frame height, #of frames, frame speed, color, frame speed, ?
-			currentWaveBeam.Initialize (waveBeamAnimation, position);
-			waveBeam.Add (currentWaveBeam);
+
+			WaveBeam currentWaveBeam = new WaveBeam(); 
+			WaveBeam.Initialize(GraphicsDevice.Viewport, waveBeamTexture,position); 
+			waveBeam.Add(waveBeams);
+
+
+
+
+			//WaveBeam currentWaveBeam = new WaveBeam (); 
+			//Animation waveBeamAnimation = new Animation (); 
+			//currentWaveBeam.Initialize()
+			//waveBeamAnimation.Initialize (waveBeamTexture, position, 50, 50, 1, 30, Color.White, 1.5f, true); //Frame width, frame height, #of frames, frame speed, color, frame speed, ?
+			//currentWaveBeam.Initialize (waveBeamAnimation, position);
+			//waveBeam.Add (currentWaveBeam);
 		}
 
 
@@ -768,13 +781,13 @@ namespace FirstGameXamarin.Controller
 		private void UpdateWaveBeam(GameTime gameTime)
 		{
 			// Update the Projectiles
-			for (int i = waveBeam.Count - 1; i >= 0; i--) 
+			for (int i = waveBeams.Count - 1; i >= 0; i--) 
 			{
-				waveBeam[i].Update(gameTime);
+				waveBeams[i].Update(gameTime);
 
-				if (waveBeam[i].Active == false)
+				if (waveBeams[i].Active == false)
 				{
-					waveBeam.RemoveAt(i);
+					waveBeams.RemoveAt(i);
 				} 
 			}
 		}

@@ -30,7 +30,7 @@ namespace FirstGameXamarin
 
 		public Texture2D WaveBeamTexture;
 
-		public Vector2 Position;
+		public Vector2 waveBeamPosition;
 
 
 		public int Width
@@ -50,16 +50,18 @@ namespace FirstGameXamarin
 			waveBeamAnimation = animation;
 
 			// Set the starting position of the player around the middle of the screen and to the back
-			Position = position;
+			waveBeamPosition = position;
 
 			// Set the player to be active
 			Active = true;
 
-			speed = .1f;
+			speed = 5f;
 
 			Hurt = 3;
 
 		}
+
+
 
 		// Draw the player
 		public void Draw(SpriteBatch spriteBatch)
@@ -77,7 +79,7 @@ namespace FirstGameXamarin
 
 			waveBeamAnimation.Position.X += speed;
 
-			waveBeamAnimation.Position.Y += (float)Math.Sin (waveBeamAnimation.Position.X * 3) * 15;
+			waveBeamAnimation.Position.Y += (float)Math.Sin (waveBeamAnimation.Position.X) * 5;
 
 
 
